@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>つながる囲碁 - Collaborative Go Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Reset and Basic Setup */
+        :root {
+            --background-start: #f3f4f6;
+            --background-end: #e5e7eb;
+            --surface-color: #ffffff;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-accent: var(--primary-color);
+            --board-bg: #f3dcb8;
+            --board-line: #a1887f;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-md: 0.75rem; /* 12px */
+            --radius-lg: 1rem; /* 16px */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        /* Main Game Container */
+        .game-container {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .board-section {
+            flex: 2;
+            min-width: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .communication-section {
+            flex: 1;
+            min-width: 320px;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1em;
+        }
+
+        /* Go Board */
+        .board {
+            --board-size: 9;
+            --cell-size: min(45px, 9vw);
+            display: grid;
+            grid-template-columns: repeat(var(--board-size), var(--cell-size));
+            grid-template-rows: repeat(var(--board-size), var(--cell-size));
+            background: var(--board-bg);
+            padding: calc(var(--cell-size) / 2);
+            border: 1px solid #d1bfa0;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        .intersection {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .intersection::before, .intersection::after {
+            content: '';
+            position: absolute;
+            background: var(--board-line);
+            z-index: 1;
+        }
+
+        .intersection::before { /* Horizontal line */
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            transform: translateY(-0.5px);
+        }
+
+        .intersection::after { /* Vertical line */
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            transform: translateX(-0.5px);
+        }
+
+        .intersection:hover {
+            background: rgba(79, 70, 229, 0.1);
+            border-radius: 50%;
+        }
+
+        /* Go Stones */
+        .stone {
+            position: absolute;
+            width: calc(var(--cell-size) * 0.9);
+            height: calc(var(--cell-size) * 0.9);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: placeStone 0.3s ease-out;
+            z-index: 2;
+        }
+
+        @keyframes placeStone {
+            from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .black {
+            background: radial-gradient(circle at 35% 35%, #555, #0a0a0a);
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.4), inset 0 0 5px rgba(255,255,255,0.1);
+        }
+
+        .white {
+            background: radial-gradient(circle at 35% 35%, #fff, #dcdcdc);
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.3), inset 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* Game Info & Controls */
+        .game-controls {
+            width: 100%;
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .game-info, .score-board {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid #e5e7eb;
+        }
+
+        .current-player {
+            font-size: 1.25em;
+            font-weight: 500;
+            color: var(--text-accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .captures {
+            color: var(--text-secondary);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            background-color: #e5e7eb;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+        }
+
+        .mode-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .mode-btn.active {
+            background: var(--surface-color);
+            color: var(--primary-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            background: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .action-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Communication Section */
+        .card {
+            background: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+
+        .message {
+            margin-bottom: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+            max-width: 90%;
+            width: fit-content;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .message.system {
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: 0.85em;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .message.player {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1em;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .send-btn {
+            padding: 0.75rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover { background: var(--primary-hover); }
+
+        .emoji-reactions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .emoji-btn {
+            font-size: 1.75em;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .emoji-btn:hover { transform: scale(1.3) rotate(10deg); }
+
+        /* Mission & Explanation Cards */
+        .mission-card {
+            background: linear-gradient(135deg, #fefce8, #fffbeb);
+            border: 1px solid #fde68a;
+            color: #a16207;
+        }
+        .mission-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .game-explanation ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .game-explanation li {
+            margin-bottom: 0.5rem;
+        }
+        .game-explanation h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        /* Custom Modal for Confirmation */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .modal-content p {
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            border: none;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.confirm {
+            background: var(--primary-color);
+            color: white;
+        }
+        .modal-btn.confirm:hover { background: var(--primary-hover); }
+
+        .modal-btn.cancel {
+            background: #e5e7eb;
+            color: var(--text-secondary);
+        }
+        .modal-btn.cancel:hover { background: #d1d5db; }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+                padding: 1rem;
+            }
+            .board-section, .communication-section {
+                min-width: 100%;
+                width: 100%;
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="board-section">
+            <h1>つながる囲碁</h1>
+            <p class="subtitle">対話と協力で深める、新しい囲碁体験</p>
+
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode(this, 'collaborative')">協力</button>
+                <button class="mode-btn" onclick="setMode(this, 'teaching')">教え合い</button>
+                <button class="mode-btn" onclick="setMode(this, 'competitive')">対戦</button>
+            </div>
+
+            <div class="board" id="board"></div>
+
+            <div class="game-controls">
+                <div class="game-info">
+                    <div class="current-player" id="currentPlayer">黒の番です</div>
+                    <div class="captures">
+                        黒の取った石: <span id="blackCaptures">0</span> |
+                        白の取った石: <span id="whiteCaptures">0</span>
+                    </div>
+                </div>
+                <div class="score-board">
+                    <h3>スコア</h3>
+                    <div class="score-item">黒: <span id="blackScore">0</span></div>
+                    <div class="score-item">白: <span id="whiteScore">0</span></div>
+                    <div class="score-item collaboration-score">
+                        協力ポイント: <span id="collaborationScore">0</span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="pass()">パス</button>
+                    <button class="action-btn" onclick="undo()">待った</button>
+                    <button class="action-btn" onclick="newGame()">新規ゲーム</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="communication-section">
+            <div class="card">
+                <h3>対話スペース</h3>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message system">ゲームが始まりました！お互いに声をかけ合いながら楽しみましょう。</div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="メッセージを入力..." onkeypress="handleChatKeyPress(event)">
+                    <button class="send-btn" onclick="sendMessage()">送信</button>
+                </div>
+            </div>
+
+            <div class="card">
+                 <h3>リアクション</h3>
+                <div class="emoji-reactions">
+                    <button class="emoji-btn" onclick="sendEmoji('👏')">👏</button>
+                    <button class="emoji-btn" onclick="sendEmoji('😊')">😊</button>
+                    <button class="emoji-btn" onclick="sendEmoji('🤔')">🤔</button>
+                    <button class="emoji-btn" onclick="sendEmoji('💡')">💡</button>
+                    <button class="emoji-btn" onclick="sendEmoji('🎯')">🎯</button>
+                    <button class="emoji-btn" onclick="sendEmoji('🤝')">🤝</button>
+                </div>
+            </div>
+
+            <div class="card mission-card" id="missionCard">
+                <div class="mission-title">今回のミッション</div>
+                <div id="missionText">お互いに3回以上アドバイスを交換しましょう</div>
+            </div>
+
+            <div class="card game-explanation">
+                <h3>ゲームの遊び方</h3>
+                <div style="margin-bottom: 15px;">
+                    <h4>📋 基本ルール</h4>
+                    <ul>
+                        <li>• 黒と白が交互に石を置きます</li>
+                        <li>• 相手の石を囲むと取ることができます</li>
+                        <li>• 最終的に陣地が多い方が勝ちです</li>
+                        <li>• でも、このゲームは勝敗より過程を大切にします！</li>
+                    </ul>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <h4>🎮 3つのモード</h4>
+                    <ul>
+                        <li><strong>協力モード:</strong> お互いの良い手を褒め合い、美しい形を作ります</li>
+                        <li><strong>教え合いモード:</strong> 初心者に優しく、待ったもOK！学習重視</li>
+                        <li><strong>対戦モード:</strong> 真剣勝負も、相手への敬意を忘れずに</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div class="modal-overlay" id="newGameModal">
+        <div class="modal-content">
+            <h3>新しいゲーム</h3>
+            <p>現在のゲームを終了して、新しいゲームを始めますか？</p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelNewGame">キャンセル</button>
+                <button class="modal-btn confirm" id="confirmNewGame">はい、始めます</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Game State Management
+        let board = [];
+        let currentPlayer = 'black';
+        let gameMode = 'collaborative';
+        let blackCaptures = 0;
+        let whiteCaptures = 0;
+        let collaborationScore = 0;
+        let moveHistory = [];
+        let messageCount = 0;
+        let adviceCount = 0;
+
+        const missions = [
+            "お互いに3回以上アドバイスを交換しましょう",
+            "相手の良い手を褒めましょう",
+            "一緒に美しい形を作りましょう",
+            "5手以内に協力して領地を作りましょう",
+            "教え合いながら10手打ちましょう"
+        ];
+        
+        // DOM Elements
+        const boardElement = document.getElementById('board');
+        const newGameModal = document.getElementById('newGameModal');
+
+        // --- Board Initialization ---
+        function initBoard() {
+            board = Array(9).fill(null).map(() => Array(9).fill(null));
+            boardElement.innerHTML = '';
+
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    const intersection = document.createElement('div');
+                    intersection.className = 'intersection';
+                    intersection.onclick = () => placeStone(i, j);
+                    intersection.id = `pos-${i}-${j}`;
+                    boardElement.appendChild(intersection);
+                }
+            }
+
+            updateDisplay();
+            selectRandomMission();
+        }
+
+        function selectRandomMission() {
+            const mission = missions[Math.floor(Math.random() * missions.length)];
+            document.getElementById('missionText').textContent = mission;
+        }
+
+        // --- Game Logic ---
+        function placeStone(row, col) {
+            if (board[row][col] !== null) return;
+
+            board[row][col] = currentPlayer;
+            moveHistory.push({ row, col, player: currentPlayer });
+
+            const intersection = document.getElementById(`pos-${row}-${col}`);
+            const stone = document.createElement('div');
+            stone.className = `stone ${currentPlayer}`;
+            intersection.appendChild(stone);
+
+            checkCaptures(row, col);
+
+            currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+            updateDisplay();
+
+            if (gameMode === 'collaborative' && moveHistory.length % 5 === 0) {
+                collaborationScore += 5;
+                addSystemMessage('素晴らしい協力プレイです！ +5協力ポイント');
+            }
+        }
+        
+        // This is a simplified capture check. A full implementation would require a recursive search (flood fill)
+        // to find groups of stones and check their liberties.
+        function checkCaptures(row, col) {
+            const opponent = currentPlayer === 'black' ? 'white' : 'black';
+            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+
+            directions.forEach(([dr, dc]) => {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (newRow >= 0 && newRow < 9 && newCol >= 0 && newCol < 9 && board[newRow][newCol] === opponent) {
+                    if (isSurrounded(newRow, newCol)) {
+                        removeStone(newRow, newCol);
+                        if (currentPlayer === 'black') {
+                            blackCaptures++;
+                        } else {
+                            whiteCaptures++;
+                        }
+                    }
+                }
+            });
+        }
+        
+        // This is a simplified surround check. It only checks immediate neighbors.
+        function isSurrounded(row, col) {
+            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+            const color = board[row][col];
+            if (!color) return false;
+
+            return directions.every(([dr, dc]) => {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (newRow < 0 || newRow >= 9 || newCol < 0 || newCol >= 9) {
+                    return true; // Edge of the board counts as a "wall"
+                }
+                const neighbor = board[newRow][newCol];
+                return neighbor !== null && neighbor !== color;
+            });
+        }
+
+        function removeStone(row, col) {
+            board[row][col] = null;
+            const intersection = document.getElementById(`pos-${row}-${col}`);
+            const stone = intersection.querySelector('.stone');
+            if (stone) {
+                stone.remove();
+            }
+        }
+
+        // --- Game Actions ---
+        function pass() {
+            addSystemMessage(`${currentPlayer === 'black' ? '黒' : '白'}がパスしました`);
+            currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+            updateDisplay();
+        }
+
+        function undo() {
+            if (moveHistory.length === 0) return;
+
+            const lastMove = moveHistory.pop();
+            removeStone(lastMove.row, lastMove.col);
+            board[lastMove.row][lastMove.col] = null; // Ensure board state is correct
+            
+            currentPlayer = lastMove.player;
+            updateDisplay();
+
+            if (gameMode === 'teaching') {
+                collaborationScore += 3;
+                addSystemMessage('待ったを使用。教え合いモードでは学習のために推奨されます！ +3協力ポイント');
+            }
+        }
+
+        function newGame() {
+            newGameModal.classList.add('visible');
+        }
+        
+        function confirmNewGame() {
+            blackCaptures = 0;
+            whiteCaptures = 0;
+            collaborationScore = 0;
+            moveHistory = [];
+            messageCount = 0;
+            adviceCount = 0;
+            currentPlayer = 'black';
+            initBoard();
+            addSystemMessage('新しいゲームが始まりました！');
+            newGameModal.classList.remove('visible');
+        }
+
+        function setMode(button, mode) {
+            gameMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            let modeMessage = '';
+            switch (mode) {
+                case 'collaborative':
+                    modeMessage = '協力モード：お互いに助け合いながら美しい棋譜を作りましょう';
+                    break;
+                case 'teaching':
+                    modeMessage = '教え合いモード：初心者も上級者も一緒に学びましょう';
+                    break;
+                case 'competitive':
+                    modeMessage = '対戦モード：フェアプレイで楽しく競いましょう';
+                    break;
+            }
+            addSystemMessage(modeMessage);
+        }
+
+        // --- Communication ---
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message === '') return;
+
+            addPlayerMessage(message);
+            input.value = '';
+
+            // Simple message analysis for collaboration points
+            if (message.includes('いい手') || message.includes('素晴らしい') || message.includes('ナイス')) {
+                collaborationScore += 2;
+                addSystemMessage('励ましのメッセージ！ +2協力ポイント');
+            }
+
+            if (message.includes('ここに') || message.includes('この手') || message.includes('どう？')) {
+                adviceCount++;
+                if (gameMode === 'teaching') {
+                    collaborationScore += 3;
+                    addSystemMessage('アドバイスの交換！ +3協力ポイント');
+                }
+            }
+
+            messageCount++;
+            if (messageCount > 0 && messageCount % 5 === 0) {
+                collaborationScore += 5;
+                addSystemMessage('活発なコミュニケーション！ +5協力ポイント');
+            }
+            updateDisplay();
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendEmoji(emoji) {
+            addPlayerMessage(emoji);
+            collaborationScore += 1;
+
+            let reaction = '';
+            switch (emoji) {
+                case '👏': reaction = '称賛！'; break;
+                case '😊': reaction = '楽しい雰囲気！'; break;
+                case '🤔': reaction = '一緒に考えましょう！'; break;
+                case '💡': reaction = 'ひらめきの共有！'; break;
+                case '🎯': reaction = 'いい狙い！'; break;
+                case '🤝': reaction = '協力の精神！'; break;
+            }
+            addSystemMessage(`${reaction} +1協力ポイント`);
+            updateDisplay();
+        }
+
+        function addPlayerMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message player';
+            messageDiv.textContent = `${currentPlayer === 'black' ? '黒' : '白'}: ${message}`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addSystemMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // --- Display & Score ---
+        function updateDisplay() {
+            document.getElementById('currentPlayer').textContent =
+                currentPlayer === 'black' ? '黒の番です' : '白の番です';
+            document.getElementById('blackCaptures').textContent = blackCaptures;
+            document.getElementById('whiteCaptures').textContent = whiteCaptures;
+            document.getElementById('collaborationScore').textContent = collaborationScore;
+
+            // Simplified score calculation
+            const blackScore = countTerritory('black') + blackCaptures;
+            const whiteScore = countTerritory('white') + whiteCaptures + 6.5; // Komi
+            document.getElementById('blackScore').textContent = blackScore;
+            document.getElementById('whiteScore').textContent = whiteScore.toFixed(1);
+        }
+        
+        // This is a simplified territory count, only counting stones on board.
+        // A full implementation requires complex algorithms to determine which empty points belong to whom.
+        function countTerritory(color) {
+            let count = 0;
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (board[i][j] === color) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('confirmNewGame').addEventListener('click', confirmNewGame);
+        document.getElementById('cancelNewGame').addEventListener('click', () => {
+            newGameModal.classList.remove('visible');
+        });
+
+        // --- Initial Game Start ---
+        window.onload = initBoard;
+    </script>
+</body>
+</html>
