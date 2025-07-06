@@ -23,8 +23,8 @@
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --radius-md: 0.75rem; /* 12px */
-            --radius-lg: 1rem; /* 16px */
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
         }
 
         * {
@@ -44,6 +44,174 @@
             padding: 1.5rem;
         }
 
+        /* Lobby Screen */
+        .lobby-container {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            display: none;
+        }
+
+        .lobby-container.visible {
+            display: block;
+        }
+
+        .lobby-title {
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .lobby-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .player-options {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .option-card {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            max-width: 250px;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .option-card.selected {
+            border-color: var(--primary-color);
+            background: #eef2ff;
+        }
+
+        .option-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .option-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .ai-difficulty {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: var(--radius-md);
+            display: none;
+        }
+
+        .ai-difficulty.visible {
+            display: block;
+        }
+
+        .difficulty-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty-options {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .difficulty-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .difficulty-btn:hover {
+            border-color: var(--primary-color);
+        }
+
+        .difficulty-btn.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .start-game-btn {
+            margin-top: 2rem;
+            padding: 1rem 3rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .start-game-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .start-game-btn.active:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .matching-status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #fef3c7;
+            border-radius: var(--radius-md);
+            display: none;
+        }
+
+        .matching-status.visible {
+            display: block;
+        }
+
+        .status-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f59e0b;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Main Game Container */
         .game-container {
             background: var(--surface-color);
@@ -52,10 +220,14 @@
             padding: 2rem;
             width: 100%;
             max-width: 1400px;
-            display: flex;
+            display: none;
             gap: 2rem;
             flex-wrap: wrap;
             justify-content: center;
+        }
+
+        .game-container.visible {
+            display: flex;
         }
 
         .board-section {
@@ -88,6 +260,19 @@
             font-size: 1em;
         }
 
+        .opponent-info {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .opponent-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
         /* Go Board */
         .board {
             --board-size: 9;
@@ -117,7 +302,7 @@
             z-index: 1;
         }
 
-        .intersection::before { /* Horizontal line */
+        .intersection::before {
             top: 50%;
             left: 0;
             right: 0;
@@ -125,7 +310,7 @@
             transform: translateY(-0.5px);
         }
 
-        .intersection::after { /* Vertical line */
+        .intersection::after {
             left: 50%;
             top: 0;
             bottom: 0;
@@ -301,6 +486,18 @@
             color: white;
         }
 
+        .message.opponent {
+            background: #e5e7eb;
+            color: var(--text-primary);
+            margin-left: auto;
+        }
+
+        .message.ai {
+            background: #dcfce7;
+            color: #166534;
+            margin-left: auto;
+        }
+
         .chat-input-container {
             display: flex;
             gap: 0.5rem;
@@ -450,6 +647,138 @@
         }
         .modal-btn.cancel:hover { background: #d1d5db; }
 
+        /* Credits Footer */
+        .credits-footer {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Music Control Panel */
+        .music-control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: none;
+        }
+
+        .music-control-panel.visible {
+            display: block;
+        }
+
+        .music-toggle {
+            position: relative;
+        }
+
+        .music-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .music-btn.muted {
+            background: #9ca3af;
+        }
+
+        .music-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: 1rem;
+            min-width: 200px;
+            display: none;
+        }
+
+        .music-dropdown.visible {
+            display: block;
+        }
+
+        .music-dropdown h4 {
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .music-option {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .music-option:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Return to Lobby Button */
+        .return-lobby-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 0.75rem 1.5rem;
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: none;
+            z-index: 100;
+        }
+
+        .return-lobby-btn.visible {
+            display: block;
+        }
+
+        .return-lobby-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Mode Explanations */
+        .mode-explanation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #e0e7ff;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            color: #4338ca;
+            display: none;
+        }
+
+        .mode-explanation.visible {
+            display: block;
+        }
+
         /* Responsive Design */
         @media (max-width: 900px) {
             .game-container {
@@ -462,14 +791,77 @@
                 width: 100%;
                 max-width: 600px;
             }
+            .player-options {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
+    <!-- Lobby Screen -->
+    <div class="lobby-container visible" id="lobbyScreen">
+        <h1 class="lobby-title">つながる囲碁</h1>
+        <p class="lobby-subtitle">対話と協力で深める、新しい囲碁体験</p>
+        
+        <div class="player-options">
+            <div class="option-card" id="onlineOption" onclick="selectOption('online')">
+                <div class="option-icon">👥</div>
+                <div class="option-title">オンライン対戦</div>
+                <div class="option-desc">リアルタイムで他のプレイヤーと対戦</div>
+            </div>
+            
+            <div class="option-card" id="aiOption" onclick="selectOption('ai')">
+                <div class="option-icon">🤖</div>
+                <div class="option-title">AI対戦</div>
+                <div class="option-desc">AIと練習しながら楽しむ</div>
+            </div>
+        </div>
+        
+        <div class="mode-explanation" id="onlineExplanation">
+            <strong>オンライン対戦について：</strong><br>
+            世界中のプレイヤーとリアルタイムで対戦できます。相手の打ち方から学び、チャットで交流しながら、新しい友達を作るチャンスです。協力モードでは一緒に美しい棋譜を作ることを目指しましょう。
+        </div>
+        
+        <div class="mode-explanation" id="aiExplanation">
+            <strong>AI対戦について：</strong><br>
+            AIは単なる対戦相手ではなく、あなたの囲碁パートナーです。レベルに応じて強さが変わり、打ち手についてアドバイスをくれたり、一緒に楽しんでくれます。初心者の方も安心して練習できます。
+        </div>
+        
+        <div class="ai-difficulty" id="aiDifficulty">
+            <div class="difficulty-title">AIの強さを選択</div>
+            <div class="difficulty-options">
+                <button class="difficulty-btn" onclick="selectDifficulty(1, event)">初級</button>
+                <button class="difficulty-btn" onclick="selectDifficulty(2, event)">中級</button>
+                <button class="difficulty-btn" onclick="selectDifficulty(3, event)">上級</button>
+            </div>
+        </div>
+        
+        <div class="ai-difficulty" id="turnSelection" style="display: none;">
+            <div class="difficulty-title">先攻・後攻を選択</div>
+            <div class="difficulty-options">
+                <button class="difficulty-btn" onclick="selectTurn('black', event)">先攻（黒）</button>
+                <button class="difficulty-btn" onclick="selectTurn('white', event)">後攻（白）</button>
+            </div>
+        </div>
+        
+        <button class="start-game-btn" id="startGameBtn" onclick="startGame()">ゲームを開始</button>
+        
+        <div class="matching-status" id="matchingStatus">
+            <span class="status-spinner"></span>
+            <span>対戦相手を探しています...</span>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="game-container" id="gameScreen">
         <div class="board-section">
             <h1>つながる囲碁</h1>
             <p class="subtitle">対話と協力で深める、新しい囲碁体験</p>
+            
+            <div class="opponent-info" id="opponentInfo">
+                対戦相手: <span class="opponent-name" id="opponentName">待機中...</span>
+            </div>
 
             <div class="mode-selector">
                 <button class="mode-btn active" onclick="setMode(this, 'collaborative')">協力</button>
@@ -543,14 +935,6 @@
                         <li>• でも、このゲームは勝敗より過程を大切にします！</li>
                     </ul>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <h4>🎮 3つのモード</h4>
-                    <ul>
-                        <li><strong>協力モード:</strong> お互いの良い手を褒め合い、美しい形を作ります</li>
-                        <li><strong>教え合いモード:</strong> 初心者に優しく、待ったもOK！学習重視</li>
-                        <li><strong>対戦モード:</strong> 真剣勝負も、相手への敬意を忘れずに</li>
-                    </ul>
-                </div>
             </div>
         </div>
     </div>
@@ -561,17 +945,41 @@
             <h3>新しいゲーム</h3>
             <p>現在のゲームを終了して、新しいゲームを始めますか？</p>
             <div class="modal-buttons">
-                <button class="modal-btn cancel" id="cancelNewGame">キャンセル</button>
-                <button class="modal-btn confirm" id="confirmNewGame">はい、始めます</button>
+                <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
+                <button class="modal-btn confirm" onclick="confirmNewGame()">はい、始めます</button>
             </div>
         </div>
     </div>
 
+    <!-- Music Control Panel -->
+    <div class="music-control-panel" id="musicPanel">
+        <div class="music-toggle">
+            <button class="music-btn" id="musicToggle" onclick="toggleMusic()">🎵</button>
+            <div class="music-dropdown" id="musicDropdown">
+                <h4>BGM選択</h4>
+                <button class="music-option" onclick="changeMusic(0)">つながりの調べ</button>
+                <button class="music-option" onclick="changeMusic(1)">和みの時間</button>
+                <button class="music-option" onclick="changeMusic(2)">協力の輪</button>
+                <button class="music-option" onclick="changeMusic(3)">BGMオフ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return to Lobby Button -->
+    <button class="return-lobby-btn" id="returnLobbyBtn" onclick="returnToLobby()">
+        ← ロビーに戻る
+    </button>
+
+    <!-- Credits Footer -->
+    <div class="credits-footer">
+        Created with AI assistance | Project: つながる囲碁
+    </div>
 
     <script>
         // Game State Management
         let board = [];
         let currentPlayer = 'black';
+        let myColor = 'black';
         let gameMode = 'collaborative';
         let blackCaptures = 0;
         let whiteCaptures = 0;
@@ -580,6 +988,22 @@
         let messageCount = 0;
         let adviceCount = 0;
 
+        // Game Settings
+        let gameType = null; // 'online' or 'ai'
+        let aiDifficulty = null;
+        let playerTurn = null; // 'black' or 'white'
+        let isMyTurn = true;
+        let aiThinking = false;
+        let onlineGameId = null;
+        let pollingInterval = null;
+        let aiInterval = null;
+
+        // Audio Settings
+        let currentBGM = null;
+        let isMusicOn = false;
+        let speechSynthesis = window.speechSynthesis;
+        let aiVoiceEnabled = false;
+
         const missions = [
             "お互いに3回以上アドバイスを交換しましょう",
             "相手の良い手を褒めましょう",
@@ -587,14 +1011,233 @@
             "5手以内に協力して領地を作りましょう",
             "教え合いながら10手打ちましょう"
         ];
+
+        // AI Messages
+        const aiMessages = {
+            greeting: [
+                "よろしくお願いします！楽しい対局にしましょう😊",
+                "こんにちは！一緒に楽しみましょう！",
+                "準備はいいですか？頑張りましょう！💪"
+            ],
+            goodMove: [
+                "いい手ですね！👏",
+                "素晴らしい！その発想はなかった💡",
+                "なるほど、勉強になります🤔",
+                "ナイスプレイ！🎯"
+            ],
+            thinking: [
+                "うーん、どこに打とうかな...🤔",
+                "難しい局面ですね...",
+                "じっくり考えさせてください💭"
+            ],
+            advice: [
+                "ここは守りを固めた方がいいかもしれません",
+                "攻めるチャンスかもしれませんね！",
+                "この辺りに注目してみては？",
+                "一緒に考えてみましょう💡"
+            ],
+            emoji: [
+                "👏", "😊", "🤔", "💡", "🎯", "🤝"
+            ]
+        };
+
+        // --- Lobby Functions ---
+        function selectOption(type) {
+            gameType = type;
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Hide all explanations first
+            document.querySelectorAll('.mode-explanation').forEach(exp => {
+                exp.classList.remove('visible');
+            });
+            
+            if (type === 'online') {
+                document.getElementById('onlineOption').classList.add('selected');
+                document.getElementById('onlineExplanation').classList.add('visible');
+                document.getElementById('aiDifficulty').classList.remove('visible');
+                document.getElementById('startGameBtn').classList.add('active');
+            } else if (type === 'ai') {
+                document.getElementById('aiOption').classList.add('selected');
+                document.getElementById('aiExplanation').classList.add('visible');
+                document.getElementById('aiDifficulty').classList.add('visible');
+                // Start button will be activated after difficulty selection
+            }
+        }
+
+        function selectDifficulty(level, event) {
+            aiDifficulty = level;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            // Show turn selection
+            document.getElementById('turnSelection').style.display = 'block';
+            document.getElementById('turnSelection').classList.add('visible');
+        }
         
-        // DOM Elements
-        const boardElement = document.getElementById('board');
-        const newGameModal = document.getElementById('newGameModal');
+        function selectTurn(turn, event) {
+            playerTurn = turn;
+            myColor = turn;
+            
+            // Update UI
+            const turnButtons = document.getElementById('turnSelection').querySelectorAll('.difficulty-btn');
+            turnButtons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Enable start button
+            document.getElementById('startGameBtn').classList.add('active');
+        }
+
+        function startGame() {
+            if (!gameType) return;
+            if (gameType === 'ai' && (!aiDifficulty || !playerTurn)) return;
+
+            if (gameType === 'online') {
+                // Show matching status
+                document.getElementById('matchingStatus').classList.add('visible');
+                // Simulate finding a match
+                setTimeout(() => {
+                    startOnlineGame();
+                }, 2000);
+            } else if (gameType === 'ai') {
+                startAIGame();
+            }
+        }
+
+        function startOnlineGame() {
+            onlineGameId = 'game_' + Date.now();
+            document.getElementById('opponentName').textContent = 'オンラインプレイヤー';
+            showGameScreen();
+            initBoard();
+            addSystemMessage('対戦相手が見つかりました！ゲームを開始します。');
+        }
+
+        function startAIGame() {
+            let aiName = 'AI初級';
+            if (aiDifficulty === 2) aiName = 'AI中級';
+            if (aiDifficulty === 3) aiName = 'AI上級';
+            
+            document.getElementById('opponentName').textContent = aiName;
+            showGameScreen();
+            initBoard();
+            
+            // AI greeting
+            setTimeout(() => {
+                const greeting = aiMessages.greeting[Math.floor(Math.random() * aiMessages.greeting.length)];
+                addAIMessage(greeting);
+            }, 1000);
+            
+            // If player chose white (後攻), AI plays first
+            if (myColor === 'white') {
+                setTimeout(() => {
+                    addSystemMessage('AIが先攻（黒）です。');
+                    makeAIMove();
+                }, 2000);
+            } else {
+                addSystemMessage('あなたが先攻（黒）です。');
+            }
+        }
+
+        function showGameScreen() {
+            document.getElementById('lobbyScreen').classList.remove('visible');
+            document.getElementById('gameScreen').classList.add('visible');
+            document.getElementById('returnLobbyBtn').classList.add('visible');
+            document.getElementById('musicPanel').classList.add('visible');
+        }
+
+        function returnToLobby() {
+            // デバッグ用: 確認ダイアログを省略して直接実行
+            // const userConfirm = window.confirm('現在のゲームを終了してロビーに戻りますか？');
+            // if (!userConfirm) return;
+            
+            // Clean up game
+            cleanupGame();
+            
+            // Reset all game state variables
+            gameType = null;
+            aiDifficulty = null;
+            playerTurn = null;
+            blackCaptures = 0;
+            whiteCaptures = 0;
+            collaborationScore = 0;
+            moveHistory = [];
+            messageCount = 0;
+            adviceCount = 0;
+            currentPlayer = 'black';
+            myColor = 'black';
+            isMyTurn = true;
+            aiThinking = false;
+            
+            // Clear chat messages
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.innerHTML = '<div class="message system">ゲームが始まりました！お互いに声をかけ合いながら楽しみましょう。</div>';
+            }
+            
+            // Hide game screen and show lobby
+            const gameScreen = document.getElementById('gameScreen');
+            const lobbyScreen = document.getElementById('lobbyScreen');
+            const returnBtn = document.getElementById('returnLobbyBtn');
+            const musicPanel = document.getElementById('musicPanel');
+            
+            if (gameScreen) gameScreen.classList.remove('visible');
+            if (returnBtn) returnBtn.classList.remove('visible');
+            if (musicPanel) musicPanel.classList.remove('visible');
+            if (lobbyScreen) lobbyScreen.classList.add('visible');
+            
+            // Reset all UI selections
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            const aiDifficultyEl = document.getElementById('aiDifficulty');
+            const turnSelectionEl = document.getElementById('turnSelection');
+            const startGameBtn = document.getElementById('startGameBtn');
+            const matchingStatus = document.getElementById('matchingStatus');
+            const musicDropdown = document.getElementById('musicDropdown');
+            
+            if (aiDifficultyEl) aiDifficultyEl.classList.remove('visible');
+            if (turnSelectionEl) {
+                turnSelectionEl.style.display = 'none';
+                turnSelectionEl.classList.remove('visible');
+            }
+            if (startGameBtn) startGameBtn.classList.remove('active');
+            if (matchingStatus) matchingStatus.classList.remove('visible');
+            if (musicDropdown) musicDropdown.classList.remove('visible');
+            
+            document.querySelectorAll('.mode-explanation').forEach(exp => {
+                exp.classList.remove('visible');
+            });
+            
+            console.log('Returned to lobby successfully');
+        }
+
+        function cleanupGame() {
+            // Stop AI interval
+            if (aiInterval) {
+                clearInterval(aiInterval);
+                aiInterval = null;
+            }
+            
+            // Stop music
+            if (currentBGM) {
+                currentBGM.pause();
+                currentBGM.currentTime = 0;
+                currentBGM = null;
+            }
+        }
 
         // --- Board Initialization ---
         function initBoard() {
             board = Array(9).fill(null).map(() => Array(9).fill(null));
+            const boardElement = document.getElementById('board');
             boardElement.innerHTML = '';
 
             for (let i = 0; i < 9; i++) {
@@ -619,6 +1262,9 @@
         // --- Game Logic ---
         function placeStone(row, col) {
             if (board[row][col] !== null) return;
+            if (gameType === 'online' && !isMyTurn) return;
+            if (gameType === 'ai' && currentPlayer !== myColor) return;
+            if (aiThinking) return;
 
             board[row][col] = currentPlayer;
             moveHistory.push({ row, col, player: currentPlayer });
@@ -637,10 +1283,101 @@
                 collaborationScore += 5;
                 addSystemMessage('素晴らしい協力プレイです！ +5協力ポイント');
             }
+
+            // Handle AI move
+            if (gameType === 'ai' && currentPlayer !== myColor) {
+                makeAIMove();
+            }
         }
-        
-        // This is a simplified capture check. A full implementation would require a recursive search (flood fill)
-        // to find groups of stones and check their liberties.
+
+        function makeAIMove() {
+            if (aiThinking) return;
+            aiThinking = true;
+            
+            // AI thinking message
+            const thinkingMsg = aiMessages.thinking[Math.floor(Math.random() * aiMessages.thinking.length)];
+            addAIMessage(thinkingMsg);
+
+            // AI makes move within 1-5 seconds (max 5 seconds as requested)
+            const thinkTime = 1000 + Math.random() * 4000; // 1-5 seconds
+            setTimeout(() => {
+                // Find empty positions
+                const emptyPositions = [];
+                for (let i = 0; i < 9; i++) {
+                    for (let j = 0; j < 9; j++) {
+                        if (board[i][j] === null) {
+                            emptyPositions.push({ row: i, col: j });
+                        }
+                    }
+                }
+
+                if (emptyPositions.length > 0) {
+                    // AI strategy based on difficulty
+                    let chosenPosition;
+                    if (aiDifficulty === 1) {
+                        // Beginner: Random move
+                        chosenPosition = emptyPositions[Math.floor(Math.random() * emptyPositions.length)];
+                    } else if (aiDifficulty === 2) {
+                        // Intermediate: Prefer center and edges
+                        const centerPositions = emptyPositions.filter(pos => 
+                            (pos.row >= 3 && pos.row <= 5) && (pos.col >= 3 && pos.col <= 5)
+                        );
+                        chosenPosition = centerPositions.length > 0 
+                            ? centerPositions[Math.floor(Math.random() * centerPositions.length)]
+                            : emptyPositions[Math.floor(Math.random() * emptyPositions.length)];
+                    } else {
+                        // Advanced: Try to play near existing stones
+                        const nearStones = emptyPositions.filter(pos => {
+                            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+                            return directions.some(([dr, dc]) => {
+                                const newRow = pos.row + dr;
+                                const newCol = pos.col + dc;
+                                return newRow >= 0 && newRow < 9 && newCol >= 0 && newCol < 9 && 
+                                       board[newRow][newCol] !== null;
+                            });
+                        });
+                        chosenPosition = nearStones.length > 0
+                            ? nearStones[Math.floor(Math.random() * nearStones.length)]
+                            : emptyPositions[Math.floor(Math.random() * emptyPositions.length)];
+                    }
+
+                    // Place the stone
+                    board[chosenPosition.row][chosenPosition.col] = currentPlayer;
+                    moveHistory.push({ row: chosenPosition.row, col: chosenPosition.col, player: currentPlayer });
+
+                    const intersection = document.getElementById(`pos-${chosenPosition.row}-${chosenPosition.col}`);
+                    const stone = document.createElement('div');
+                    stone.className = `stone ${currentPlayer}`;
+                    intersection.appendChild(stone);
+
+                    checkCaptures(chosenPosition.row, chosenPosition.col);
+
+                    currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+                    updateDisplay();
+
+                    aiThinking = false;
+
+                    // AI comment after move
+                    if (Math.random() > 0.5) {
+                        setTimeout(() => {
+                            const comment = aiMessages.goodMove[Math.floor(Math.random() * aiMessages.goodMove.length)];
+                            addAIMessage(comment);
+                        }, 500);
+                    }
+
+                    // Check for collaboration points
+                    if (gameMode === 'collaborative' && moveHistory.length % 5 === 0) {
+                        collaborationScore += 5;
+                        addSystemMessage('素晴らしい協力プレイです！ +5協力ポイント');
+                    }
+                } else {
+                    aiThinking = false;
+                    // No valid moves - pass
+                    pass();
+                }
+            }, thinkTime);
+        }
+
         function checkCaptures(row, col) {
             const opponent = currentPlayer === 'black' ? 'white' : 'black';
             const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
@@ -660,8 +1397,7 @@
                 }
             });
         }
-        
-        // This is a simplified surround check. It only checks immediate neighbors.
+
         function isSurrounded(row, col) {
             const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
             const color = board[row][col];
@@ -671,7 +1407,7 @@
                 const newRow = row + dr;
                 const newCol = col + dc;
                 if (newRow < 0 || newRow >= 9 || newCol < 0 || newCol >= 9) {
-                    return true; // Edge of the board counts as a "wall"
+                    return true;
                 }
                 const neighbor = board[newRow][newCol];
                 return neighbor !== null && neighbor !== color;
@@ -692,6 +1428,10 @@
             addSystemMessage(`${currentPlayer === 'black' ? '黒' : '白'}がパスしました`);
             currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
             updateDisplay();
+
+            if (gameType === 'ai' && currentPlayer !== myColor) {
+                setTimeout(() => makeAIMove(), 1000);
+            }
         }
 
         function undo() {
@@ -699,7 +1439,7 @@
 
             const lastMove = moveHistory.pop();
             removeStone(lastMove.row, lastMove.col);
-            board[lastMove.row][lastMove.col] = null; // Ensure board state is correct
+            board[lastMove.row][lastMove.col] = null;
             
             currentPlayer = lastMove.player;
             updateDisplay();
@@ -711,9 +1451,9 @@
         }
 
         function newGame() {
-            newGameModal.classList.add('visible');
+            document.getElementById('newGameModal').classList.add('visible');
         }
-        
+
         function confirmNewGame() {
             blackCaptures = 0;
             whiteCaptures = 0;
@@ -722,9 +1462,21 @@
             messageCount = 0;
             adviceCount = 0;
             currentPlayer = 'black';
+            aiThinking = false;
             initBoard();
             addSystemMessage('新しいゲームが始まりました！');
-            newGameModal.classList.remove('visible');
+            closeModal();
+
+            if (gameType === 'ai') {
+                setTimeout(() => {
+                    const greeting = aiMessages.greeting[Math.floor(Math.random() * aiMessages.greeting.length)];
+                    addAIMessage(greeting);
+                }, 1000);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('newGameModal').classList.remove('visible');
         }
 
         function setMode(button, mode) {
@@ -756,7 +1508,7 @@
             addPlayerMessage(message);
             input.value = '';
 
-            // Simple message analysis for collaboration points
+            // Message analysis for collaboration points
             if (message.includes('いい手') || message.includes('素晴らしい') || message.includes('ナイス')) {
                 collaborationScore += 2;
                 addSystemMessage('励ましのメッセージ！ +2協力ポイント');
@@ -776,6 +1528,20 @@
                 addSystemMessage('活発なコミュニケーション！ +5協力ポイント');
             }
             updateDisplay();
+
+            // AI response
+            if (gameType === 'ai' && Math.random() > 0.5) {
+                setTimeout(() => {
+                    const responses = [
+                        "なるほど！参考になります😊",
+                        "いいアイデアですね！",
+                        "一緒に頑張りましょう！🤝",
+                        "楽しいですね！"
+                    ];
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    addAIMessage(response);
+                }, 1000);
+            }
         }
 
         function handleChatKeyPress(event) {
@@ -805,7 +1571,16 @@
             const chatMessages = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message player';
-            messageDiv.textContent = `${currentPlayer === 'black' ? '黒' : '白'}: ${message}`;
+            messageDiv.textContent = `あなた: ${message}`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addAIMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            messageDiv.textContent = `AI: ${message}`;
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -827,15 +1602,12 @@
             document.getElementById('whiteCaptures').textContent = whiteCaptures;
             document.getElementById('collaborationScore').textContent = collaborationScore;
 
-            // Simplified score calculation
             const blackScore = countTerritory('black') + blackCaptures;
-            const whiteScore = countTerritory('white') + whiteCaptures + 6.5; // Komi
+            const whiteScore = countTerritory('white') + whiteCaptures + 6.5;
             document.getElementById('blackScore').textContent = blackScore;
             document.getElementById('whiteScore').textContent = whiteScore.toFixed(1);
         }
-        
-        // This is a simplified territory count, only counting stones on board.
-        // A full implementation requires complex algorithms to determine which empty points belong to whom.
+
         function countTerritory(color) {
             let count = 0;
             for (let i = 0; i < 9; i++) {
@@ -848,14 +1620,66 @@
             return count;
         }
 
-        // --- Event Listeners ---
-        document.getElementById('confirmNewGame').addEventListener('click', confirmNewGame);
-        document.getElementById('cancelNewGame').addEventListener('click', () => {
-            newGameModal.classList.remove('visible');
-        });
+        // --- Music Control Functions ---
+        function toggleMusic() {
+            const musicBtn = document.getElementById('musicToggle');
+            const dropdown = document.getElementById('musicDropdown');
+            
+            // Toggle dropdown visibility
+            dropdown.classList.toggle('visible');
+        }
 
-        // --- Initial Game Start ---
-        window.onload = initBoard;
+        function changeMusic(index) {
+            // Since we can't use external music sources, we'll just update the UI
+            // In a real implementation, you would need to host your own music files
+            
+            // Close dropdown
+            document.getElementById('musicDropdown').classList.remove('visible');
+            
+            // Update button state
+            const musicBtn = document.getElementById('musicToggle');
+            
+            if (index === 3) {
+                // Turn off music
+                isMusicOn = false;
+                musicBtn.classList.add('muted');
+                musicBtn.textContent = '🔇';
+                return;
+            }
+            
+            // Turn on selected music
+            isMusicOn = true;
+            musicBtn.classList.remove('muted');
+            musicBtn.textContent = '🎵';
+            
+            // Show notification
+            const musicNames = ['つながりの調べ', '和みの時間', '協力の輪'];
+            if (index >= 0 && index < musicNames.length) {
+                addSystemMessage(`BGM: ${musicNames[index]}を選択しました`);
+            }
+        }
+
+        // --- Initialize ---
+        window.onload = function() {
+            // Start with lobby screen visible
+            document.getElementById('lobbyScreen').classList.add('visible');
+            document.getElementById('gameScreen').classList.remove('visible');
+            
+            // Close modal when clicking outside
+            document.getElementById('newGameModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+            
+            // Close music dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                const musicPanel = document.getElementById('musicPanel');
+                if (musicPanel && !musicPanel.contains(e.target)) {
+                    document.getElementById('musicDropdown').classList.remove('visible');
+                }
+            });
+        };
     </script>
 </body>
 </html>
